@@ -7,7 +7,8 @@ class Game:
     def __init__(self):
         self._running = True
         self._display_surf = None
-        self.size = self.weight, self.height = 640, 400
+        self.size = self.width, self.height = 1280, 920
+        self.gameClock = pygame.time.Clock()
 
     def on_init(self):
         self.player = ship.Ship(100,100)
@@ -29,7 +30,7 @@ class Game:
     
     def on_render(self):
         self._display_surf.fill((0,0,0))
-        self.player.update(self._display_surf, self.keyboard)
+        self.player.update(self._display_surf, self.keyboard, self.gameClock, self.size)
     
     def on_cleanup(self):
         pygame.quit()
