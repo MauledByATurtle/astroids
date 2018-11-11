@@ -1,6 +1,7 @@
 import pygame
 import ship
 import keyboard
+import shot_basic
 from pygame.locals import *
 
 class Game:
@@ -11,12 +12,16 @@ class Game:
         self.gameClock = pygame.time.Clock()
 
     def on_init(self):
-        self.player = ship.Ship(100,100)
+        self.player = ship.Ship(self.width/2,self.height/2)
         self.keyboard = keyboard.Keyboard()
         
         pygame.init()
         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        self._running = True
+        #self._running = True
+
+        #
+        pygame.font.init()
+        self.myfont = pygame.font.SysFont('Ariel', 30)
 
     def on_event(self, event):
         if event.type == pygame.QUIT:
@@ -31,6 +36,11 @@ class Game:
     def on_render(self):
         self._display_surf.fill((0,0,0))
         self.player.update(self._display_surf, self.keyboard, self.gameClock, self.size)
+        self.player.updateShots(self._display_surf, self.keyboard, self.gameClock, self.size)
+
+        #
+        textsurface = self.myfont.render(str(self.gameClock.get_fps()), False, (255,255,255))
+        self._display_surf.blit(textsurface,(0,0))
     
     def on_cleanup(self):
         pygame.quit()
