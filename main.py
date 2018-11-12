@@ -2,6 +2,7 @@ import pygame
 import ship
 import keyboard
 import shot_basic
+import astroid
 from pygame.locals import *
 
 class Game:
@@ -14,6 +15,8 @@ class Game:
     def on_init(self):
         self.player = ship.Ship(self.width/2,self.height/2)
         self.keyboard = keyboard.Keyboard()
+
+        self.astroid = astroid.Astroid(500,500,20)
         
         pygame.init()
         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
@@ -38,6 +41,7 @@ class Game:
         self.player.update(self._display_surf, self.keyboard, self.gameClock, self.size)
         self.player.updateShots(self._display_surf, self.keyboard, self.gameClock, self.size)
 
+        self.astroid.update(self._display_surf, self.gameClock, self.size)
         #
         textsurface = self.myfont.render(str(self.gameClock.get_fps()), False, (255,255,255))
         self._display_surf.blit(textsurface,(0,0))

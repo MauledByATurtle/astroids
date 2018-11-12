@@ -86,12 +86,12 @@ class Ship:
             
     def updateVelocityParamater(self,velocityXorY):
         if velocityXorY < -self.MAXVELOCITY:
-            vevelocityXorYl = -self.MAXVELOCITY
+            velocityXorY = -self.MAXVELOCITY
             
         if velocityXorY > self.MAXVELOCITY:
             velocityXorY = self.MAXVELOCITY
 
-        if self.accelerating == False and abs(velocityXorY > 0):
+        if self.accelerating == False and abs(velocityXorY) > 0:
             if velocityXorY > 0:
                 velocityXorY -= self.deacceleration
                 if velocityXorY < 0:
