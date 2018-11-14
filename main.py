@@ -33,15 +33,14 @@ class Game:
         self.keyboard.keyUp(event)
             
     def on_loop(self):
-        if(self.keyboard.getW()):
-            pass
-    
-    def on_render(self):
         self._display_surf.fill((0,0,0))
-        self.player.update(self._display_surf, self.keyboard, self.gameClock, self.size)
+        self.player.update(self.keyboard, self.gameClock, self.size)
         self.player.updateShots(self._display_surf, self.keyboard, self.gameClock, self.size)
 
         self.astroid.update(self._display_surf, self.gameClock, self.size)
+    
+    def on_render(self):
+        self.player.draw(self._display_surf)
         #
         textsurface = self.myfont.render(str(self.gameClock.get_fps()), False, (255,255,255))
         self._display_surf.blit(textsurface,(0,0))

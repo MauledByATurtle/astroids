@@ -13,7 +13,6 @@ class Astroid:
         self.velocity = [1,1]
         self.acceleration = [0,0]
         self.rotationalVelocity = 0.05
-
         self.deacceleration = 0
 
         self.MAXVELOCITY = 10

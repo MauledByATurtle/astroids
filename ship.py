@@ -26,9 +26,11 @@ class Ship:
         self.BACKLEFTDEGREE = 180 - math.degrees((math.atan((self.SIZE[0]/2)/(self.SIZE[1]/2))))
         self.BACKRIGHTDEGREE = 180 +  math.degrees((math.atan((self.SIZE[0]/2)/(self.SIZE[1]/2))))
 
-    def update(self, surface, keyboard, clock, size):
+    def update(self, keyboard, clock, size):
         self.updatePhysics(keyboard, clock, size)
         self.updateShipDraw()
+
+    def draw(self, surface):
         self.drawShip(surface)
 
     def drawShip(self, surface):
