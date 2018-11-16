@@ -7,9 +7,10 @@ class ShotBasic:
         self.posB = [0,0]
         self.color = (255,0,0)
         self.degree = angle
-        self.speed = 50
-        self.length = 10
+        self.speed = 10
+        self.length = self.speed
         self.width = 2
+        self.damage = 10
 
     def update(self, surface, clock):
         self.updatePhysics(clock)
