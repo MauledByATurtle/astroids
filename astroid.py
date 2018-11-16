@@ -18,25 +18,24 @@ class Astroid:
         self.rectHeightWidth = 0
 
         self.MAXVELOCITY = 10
-        self.SIZEVARIATION = 10
+        self.SIZEVARIATION = size*0.5
         self.COLOR = (255,255,255)
         self.ROTATIONALSPEED = 0.001
+        self.OFFSCREENBUFFER = self.size
         self.initPoints()
         self.calculateRectangle()
 
     def calculateRectangle(self):
-        heightWidth = 0
         heightWidth = self.calcSpecificPoint(self.pointsMagnitude)
-
         self.rectHeightWidth = heightWidth
-
         self.updateRectangle()
 
         #################################
 
     def checkHit(self, shotArray, ship):
         for shot in shotArray:
-            self.checkIntersect(shot, ship)
+            if(self.mainRect.collidepoint(shot.pos)):
+                self.checkIntersect(shot, ship)
 
     def onSegment(self, p,q,r):
         if(q[0] <= max(p[0], r[0]) and q[0] >= min(p[0],r[0]) and q[1] <= max(p[1], r[1]) and q[1] >= min(p[1],r[1])):
@@ -81,7 +80,7 @@ class Astroid:
 
     def checkIntersect(self, shot, ship):
         shotPointA = shot.pos
-        shotPointB = shot.posB
+        shotPointB = shot.posC
         for i in range(len(self.drawPoints)):
             k = (i+1) % (len(self.drawPoints))
             if self.doIntersect(self.drawPoints[i], self.drawPoints[k], shotPointA,  shotPointB):
@@ -103,12 +102,10 @@ class Astroid:
         return damage
 
     def hit(self, pointA, pointB, shot, ship):
-        #
         self.calcShotVelocityAndSpin(self.drawPoints[pointA], self.drawPoints[pointB], shot)
-        #
         damage = self.calcDamage(self.drawPoints[pointA],self.drawPoints[pointB],shot)
-        self.calcHit(pointA, shot, damage[0])
-        self.calcHit(pointB, shot, damage[1])
+        self.calcHit(pointA, shot, abs(damage[0]))
+        self.calcHit(pointB, shot, abs(damage[1]))
         ship.deleteShot(shot)
         self.calculateRectangle()
 
@@ -119,24 +116,22 @@ class Astroid:
         ####################################
 
     def calcShotVelocityAndSpin(self, pointA, pointB, shot):
-        shotAngle = self.calcShotAngle(pointA,pointB,shot)
+        shotAngle = self.calcShotAngle(pointA, pointB, shot)
         angular = self.trigX(shotAngle, shot.force)
         velocity = self.trigY(shotAngle, shot.force)
         velocityDirection = shot.degree
 
         #
         self.rotationalVelocity -= angular * self.ROTATIONALSPEED
-        self.velocity[0] = self.trigX(velocityDirection,velocity) * 0.01
-        self.velocity[1] = -self.trigY(velocityDirection,velocity) * 0.01
+        print(self.trigX(shot.force,shot.degree))
+        self.velocity[0] += self.trigX(shot.force,shot.degree) + (self.trigX(velocity, velocityDirection)*0.1)
+        self.velocity[1] += self.trigY(shot.force,shot.degree) + (self.trigY(velocity, velocityDirection)*0.1)
         
 
 
     def calcShotAngle(self, pointA, pointB, shot):
         shotSlope = self.calcSlope(shot.pos, shot.posB)
         octSlope = self.calcSlope(pointA, pointB)
-
-        print(str(shotSlope) + " " + str(octSlope))
-
         topHalf = octSlope -  shotSlope
         bottomHalf = 1 + (octSlope * shotSlope)
 
@@ -146,12 +141,12 @@ class Astroid:
     def calcSlope(self, pointA, pointB):
         adj = pointB[0] - pointA[0]
         opp = pointB[1] - pointA[1]
+        try:
+            slope = opp/adj
+        except ZeroDivisionError:
+            print("RareCase of a slope of 0")
+            
         return opp/adj
-        
-        
-
-
-
 
         ####################################
 
@@ -184,6 +179,7 @@ class Astroid:
         self.drawAstroid(surface)
 
     def updatePhysics(self, clock, size):
+        self.checkAllBounds(size)
         self.updateVelocity()
         self.updateRotation(clock)
 
@@ -233,3 +229,29 @@ class Astroid:
 
     def trigY(self,length,deg):
         return length*math.sin(math.radians(deg))
+
+    def checkAllBounds(self, size):
+        self.checkBoundTop(size[1], size[0])
+        self.checkBoundBot(size[1], size[0])
+        self.checkBoundRight(size[0], size[1])
+        self.checkBoundLeft(size[0], size[1])
+
+    def checkBoundTop(self, height, width):
+        if self.pos[1] > height + self.OFFSCREENBUFFER:
+            self.pos[1] = -self.OFFSCREENBUFFER
+            self.pos[0] = width - self.pos[0]
+
+    def checkBoundBot(self, height, width):
+        if self.pos[1] < -self.OFFSCREENBUFFER:
+            self.pos[1] = height + self.OFFSCREENBUFFER
+            self.pos[0] = width - self.pos[0]
+
+    def checkBoundRight(self, width, height):
+        if self.pos[0] > width + self.OFFSCREENBUFFER:
+            self.pos[0] = -self.OFFSCREENBUFFER
+            self.pos[1] = height - self.pos[1]
+
+    def checkBoundLeft(self, width, height):
+        if self.pos[0] < -self.OFFSCREENBUFFER:
+            self.pos[0] = width + self.OFFSCREENBUFFER
+            self.pos[1] = height - self.pos[1]

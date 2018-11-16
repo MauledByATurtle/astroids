@@ -120,26 +120,30 @@ class Ship:
 
 
     def checkAllBounds(self, size):
-        self.checkBoundTop(size[1])
-        self.checkBoundBot(size[1])
-        self.checkBoundRight(size[0])
-        self.checkBoundLeft(size[0])
+        self.checkBoundTop(size[1], size[0])
+        self.checkBoundBot(size[1], size[0])
+        self.checkBoundRight(size[0], size[1])
+        self.checkBoundLeft(size[0], size[1])
 
-    def checkBoundTop(self, height):
+    def checkBoundTop(self, height, width):
         if self.pos[1] > height:
             self.pos[1] = 0
+            self.pos[0] = width - self.pos[0]
 
-    def checkBoundBot(self, height):
+    def checkBoundBot(self, height, width):
         if self.pos[1] < 0:
             self.pos[1] = height
+            self.pos[0] = width - self.pos[0]
 
-    def checkBoundRight(self, width):
+    def checkBoundRight(self, width, height):
         if self.pos[0] > width:
             self.pos[0] = 0
+            self.pos[1] = height - self.pos[1]
 
-    def checkBoundLeft(self, width):
+    def checkBoundLeft(self, width, height):
         if self.pos[0] < 0:
             self.pos[0] = width
+            self.pos[1] = height - self.pos[1]
 
     def pythag(self,a,b):
         return math.sqrt(math.pow(a,2)+math.pow(b,2))
