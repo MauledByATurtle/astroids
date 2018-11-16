@@ -44,8 +44,14 @@ class Ship:
         for shot in self.bulletsArray:
             shot.update(surface, clock)
             if shot.checkAllBounds(size):
-                self.bulletsArray.pop(counter)
+                self.deleteShot(self.bulletsArray[counter])
             counter += 1
+
+    def deleteShot(self, shot):
+        try:
+            self.bulletsArray.remove(shot)
+        except ValueError:
+            print("Bullet Died")
 
     def checkShooting(self,keyboard):
         if keyboard.getSpace() and self.bulletShot == False:

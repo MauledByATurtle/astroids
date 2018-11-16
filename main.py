@@ -5,8 +5,6 @@ import shot_basic
 import astroid
 from pygame.locals import *
 
-#BUG: Shots despawning
-
 class Game:
     def __init__(self):
         self._running = True
@@ -38,11 +36,13 @@ class Game:
         self.player.update(self.keyboard, self.gameClock, self.size)
         self.player.updateShots(self._display_surf, self.keyboard, self.gameClock, self.size)
 
-        self.astroid.update(self.gameClock, self.size, self.player.bulletsArray)
+        self.astroid.update(self.gameClock, self.size)
+        self.astroid.checkHit(self.player.bulletsArray, self.player)
     
     def on_render(self):
         self.player.draw(self._display_surf)
         self.astroid.draw(self._display_surf)
+        
         #
         textsurface = self.myfont.render(str(self.gameClock.get_fps()), False, (255,255,255))
         self._display_surf.blit(textsurface,(0,0))

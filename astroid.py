@@ -12,7 +12,7 @@ class Astroid:
 
         self.velocity = [0,0]
         self.acceleration = [0,0]
-        self.rotationalVelocity = 0 #0.05
+        self.rotationalVelocity = 0
         self.deacceleration = 0
 
         self.rectHeightWidth = 0
@@ -20,7 +20,7 @@ class Astroid:
         self.MAXVELOCITY = 10
         self.SIZEVARIATION = 10
         self.COLOR = (255,255,255)
-
+        self.ROTATIONALSPEED = 0.001
         self.initPoints()
         self.calculateRectangle()
 
@@ -33,6 +33,10 @@ class Astroid:
         self.updateRectangle()
 
         #################################
+
+    def checkHit(self, shotArray, ship):
+        for shot in shotArray:
+            self.checkIntersect(shot, ship)
 
     def onSegment(self, p,q,r):
         if(q[0] <= max(p[0], r[0]) and q[0] >= min(p[0],r[0]) and q[1] <= max(p[1], r[1]) and q[1] >= min(p[1],r[1])):
@@ -75,32 +79,79 @@ class Astroid:
 
         return False
 
-    def checkIntersect(self,shot):
+    def checkIntersect(self, shot, ship):
         shotPointA = shot.pos
         shotPointB = shot.posB
         for i in range(len(self.drawPoints)):
             k = (i+1) % (len(self.drawPoints))
             if self.doIntersect(self.drawPoints[i], self.drawPoints[k], shotPointA,  shotPointB):
-                self.hit(i,k,shot)
+                self.hit(i,k,shot, ship)
 
-    def calcHit(self, point, shot):
-        if(self.pointsMagnitude[point][0] - shot.damage > 0):
-            self.pointsMagnitude[point][0] = self.pointsMagnitude[point][0] - shot.damage
+    def calcHit(self, point, shot, damagePerc):
+
+        if((self.pointsMagnitude[point][0] - (shot.damage * damagePerc)) > 0):
+            self.pointsMagnitude[point][0] = self.pointsMagnitude[point][0] - (shot.damage * damagePerc)
         else:
             self.pointsMagnitude[point][0] = 0
             #Destroy
 
-    def calcDamage():
-        self.calcAngle()
+    def calcDamage(self, pointA, pointB, shot):
+        damage = [0,0]
+        distanceBetweenPoints = abs(self.calcDistance(pointA, pointB))
+        damage[0] = 1 - abs(self.calcDistance(pointA, shot.pos)) / distanceBetweenPoints
+        damage[1] = 1 - abs(self.calcDistance(pointB, shot.pos)) / distanceBetweenPoints
+        return damage
 
-    def calcAngle():
-        adj = point
-
-    def hit(self, pointA, pointB, shot):
-        #self.calcDamage()
-        self.calcHit(pointA, shot)
-        self.calcHit(pointB, shot)
+    def hit(self, pointA, pointB, shot, ship):
+        #
+        self.calcShotVelocityAndSpin(self.drawPoints[pointA], self.drawPoints[pointB], shot)
+        #
+        damage = self.calcDamage(self.drawPoints[pointA],self.drawPoints[pointB],shot)
+        self.calcHit(pointA, shot, damage[0])
+        self.calcHit(pointB, shot, damage[1])
+        ship.deleteShot(shot)
         self.calculateRectangle()
+
+    def calcDistance(self, pointA, pointB):
+        return math.sqrt(math.pow(pointB[0]-pointA[0],2) + math.pow(pointB[1]-pointA[1],2))
+
+
+        ####################################
+
+    def calcShotVelocityAndSpin(self, pointA, pointB, shot):
+        shotAngle = self.calcShotAngle(pointA,pointB,shot)
+        angular = self.trigX(shotAngle, shot.force)
+        velocity = self.trigY(shotAngle, shot.force)
+        velocityDirection = shot.degree
+
+        #
+        self.rotationalVelocity -= angular * self.ROTATIONALSPEED
+        self.velocity[0] = self.trigX(velocityDirection,velocity) * 0.01
+        self.velocity[1] = -self.trigY(velocityDirection,velocity) * 0.01
+        
+
+
+    def calcShotAngle(self, pointA, pointB, shot):
+        shotSlope = self.calcSlope(shot.pos, shot.posB)
+        octSlope = self.calcSlope(pointA, pointB)
+
+        print(str(shotSlope) + " " + str(octSlope))
+
+        topHalf = octSlope -  shotSlope
+        bottomHalf = 1 + (octSlope * shotSlope)
+
+        return( math.degrees(math.atan(topHalf/bottomHalf)))
+
+
+    def calcSlope(self, pointA, pointB):
+        adj = pointB[0] - pointA[0]
+        opp = pointB[1] - pointA[1]
+        return opp/adj
+        
+        
+
+
+
 
         ####################################
 
@@ -124,14 +175,10 @@ class Astroid:
         point = self.size + change
         return point
     
-    def update(self, clock, size, shotArray):
+    def update(self, clock, size):
         self.updatePhysics(clock, size)
         self.updateAstroidDraw()
         self.updateRectangle()
-
-        #######
-        for shot in shotArray:
-            self.checkIntersect(shot)
 
     def draw(self, surface):
         self.drawAstroid(surface)
