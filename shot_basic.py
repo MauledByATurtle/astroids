@@ -19,12 +19,14 @@ class ShotBasic:
         self.updatePhysics(clock)
         self.updateBulletDraw()
         pygame.draw.line(surface, (255,0,0), self.pos, self.posB, self.width)
+        #pygame.draw.line(surface, (0,255,0), self.pos, self.posC, 1)
+
 
     def updateBulletDraw(self):
-        self.posC[0] = self.pos[0]+self.trigX(self.hitDectLen,self.degree)
-        self.posC[1] = self.pos[1]+self.trigY(self.hitDectLen,self.degree)
-        self.posB[0] = self.pos[0]+self.trigX(self.length,self.degree)
-        self.posB[1] = self.pos[1]+self.trigY(self.length,self.degree)
+        self.posC[0] = self.pos[0]-self.trigX(self.hitDectLen,self.degree)
+        self.posC[1] = self.pos[1]-self.trigY(self.hitDectLen,self.degree)
+        self.posB[0] = self.pos[0]-self.trigX(self.length,self.degree)
+        self.posB[1] = self.pos[1]-self.trigY(self.length,self.degree)
         
     def updatePhysics(self, clock):
         self.pos[0] = (self.pos[0] + self.trigX(self.speed,self.degree))

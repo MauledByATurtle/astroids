@@ -25,6 +25,8 @@ class Astroid:
         self.initPoints()
         self.calculateRectangle()
 
+        self.amHit = False
+
     def calculateRectangle(self):
         heightWidth = self.calcSpecificPoint(self.pointsMagnitude)
         self.rectHeightWidth = heightWidth
@@ -81,15 +83,17 @@ class Astroid:
     def checkIntersect(self, shot, ship):
         shotPointA = shot.pos
         shotPointB = shot.posC
+        
         for i in range(len(self.drawPoints)):
             k = (i+1) % (len(self.drawPoints))
             if self.doIntersect(self.drawPoints[i], self.drawPoints[k], shotPointA,  shotPointB):
-                self.hit(i,k,shot, ship)
+                self.hit(i,k,shot, ship) 
 
     def calcHit(self, point, shot, damagePerc):
 
         if((self.pointsMagnitude[point][0] - (shot.damage * damagePerc)) > 0):
             self.pointsMagnitude[point][0] = self.pointsMagnitude[point][0] - (shot.damage * damagePerc)
+            self.amHit = True
         else:
             self.pointsMagnitude[point][0] = 0
             #Destroy
@@ -149,6 +153,9 @@ class Astroid:
         return opp/adj
 
         ####################################
+
+    def changeAngles(self, newList):
+        self.pointsMagnitude = newList
 
     def updateRectangle(self):
         self.mainRect = pygame.Rect(self.pos[0] - self.rectHeightWidth, self.pos[1] - self.rectHeightWidth , self.rectHeightWidth*2, self.rectHeightWidth*2)
@@ -222,7 +229,8 @@ class Astroid:
 
     def drawAstroid(self, surface):
         pygame.draw.polygon(surface, self.COLOR, self.drawPoints)
-        pygame.draw.rect(surface, (255,0,0), self.mainRect, 1)
+        pygame.draw.polygon(surface, (50,50,50), self.drawPoints, 1)
+        #pygame.draw.rect(surface, (255,0,0), self.mainRect, 1)
 
     def trigX(self,length,deg):
         return length*math.cos(math.radians(deg))

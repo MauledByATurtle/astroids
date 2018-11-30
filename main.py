@@ -3,11 +3,11 @@ import ship
 import keyboard
 import shot_basic
 import astroid
+import basic_font
 from pygame.locals import *
 
 #Bugs:
-    #bullets hitting both sides
-    #divison by zero
+
 
 #TODO:
     #particle class
@@ -21,43 +21,57 @@ class Game:
         self.size = self.width, self.height = 1280, 920
         self.gameClock = pygame.time.Clock()
         self.mainMenu = True
+        self.mainMenuTimer = 20
+        self.menuCounter = 0
 
     def on_game_init(self):
-        #self.player = ship.Ship(self.width/2,self.height/2)
-        self.keyboard = keyboard.Keyboard()
-
         self.astroid = astroid.Astroid(500,500,30)
-        self.myfont = pygame.font.SysFont('Ariel', 30)
+        self.debugText = basic_font.basic_Text()
+        self.debugText.setTopLeft(0,0)
 
     def on_init(self):
-        self.player = ship.Ship(self.width/2,self.height/2)
-        self.keyboard = keyboard.Keyboard()
         
         pygame.init()
         pygame.font.init()
+        
         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-        self.mainMenuFont = pygame.font.SysFont('Ariel', 30)
+
+        self.player = ship.Ship(self.width/1.5,self.height/1.5)
+        self.keyboard = keyboard.Keyboard()
+        
+        self.mainMenuFont = basic_font.basic_Text()
+        self.mainMenuFont.setCenter(self.width/2-50, self.height/3)
+        self.mainMenuFont.setText("Main Menu")
+
+        self.playFont = basic_font.basic_Text()
+        self.playFont.setCenter(self.width/2-20, self.height/2)
+        self.playFont.setColor((0,0,0))
+        self.playFont.setText("Play")
+        
+        self.playAstroid = astroid.Astroid(self.width/2, self.height/2, 0)
+        self.playAstroid.changeAngles([[67,22.5],[35,67.5],[42,112.5],[60,157.5],[52,202.5],[31,247.5],[33,292.5],[62,337.5]])
+        self.playAstroid.calculateRectangle()
 
     def on_event(self, event):
         if event.type == pygame.QUIT:
             self._running = False
+            self.mainMenu = False
         self.keyboard.keyDown(event)
         self.keyboard.keyUp(event)
             
     def on_loop(self):
-        self._display_surf.fill((0,0,0))
-        self.player_update()
-
+        
         self.astroid.update(self.gameClock, self.size)
         self.astroid.checkHit(self.player.bulletsArray, self.player)
     
     def on_render(self):
+        self._display_surf.fill((0,0,0))
+        self.player_update()
         self.player.draw(self._display_surf)
         self.astroid.draw(self._display_surf)
-        
         #
-        textsurface = self.myfont.render(str(self.gameClock.get_fps()), False, (255,255,255))
-        self._display_surf.blit(textsurface,(0,0))
+        self.debugText.setText(str(self.gameClock.get_fps()))
+        self.debugText.printText(self._display_surf)
     
     def on_cleanup(self):
         pygame.quit()
@@ -67,14 +81,25 @@ class Game:
         self.player.updateShots(self._display_surf, self.keyboard, self.gameClock, self.size)
 
     def menuRender(self):
+        
+        self.player.draw(self._display_surf)
+        self.playAstroid.draw(self._display_surf)
+        self.playFont.printText(self._display_surf)
+        self.mainMenuFont.printText(self._display_surf)
+
+    def menuLoop(self):
         self._display_surf.fill((0,0,0))
         self.player_update()
-        self.player.draw(self._display_surf)
         
-        titleText = self.mainMenuFont.render("Main Menu", False, (255,255,255))
-        self._display_surf.blit(titleText,(self.width/2,self.height/3))
+        self.playAstroid.update(self.gameClock, self.size)
+        self.playAstroid.checkHit(self.player.bulletsArray, self.player)
 
-        if self.keyboard.getSpace() == True:
+        self.playFont.setCenter(self.playAstroid.pos[0],self.playAstroid.pos[1])
+
+        if(self.playAstroid.amHit == True):
+            self.menuCounter += 1
+
+        if(self.menuCounter >= self.mainMenuTimer):
             self.mainMenu = False
 
     def on_execute(self):
@@ -85,6 +110,7 @@ class Game:
         while( self.mainMenu == True):
             for event in pygame.event.get():
                 self.on_event(event)
+            self.menuLoop()
             self.menuRender()
             pygame.display.update()
 
@@ -96,8 +122,8 @@ class Game:
             self.on_loop()
             self.on_render()
             pygame.display.update()
+            
         self.on_cleanup()
-
 
 if __name__ == "__main__" :
     game = Game()
